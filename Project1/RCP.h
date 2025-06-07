@@ -2,6 +2,8 @@
 #include"static.h"
 #include"string.h"
 
+// ver. 1.0.1
+
 const int	ROCK = 0;
 const int	SISSORS = 1;
 const int	PAPER = 2;
@@ -16,7 +18,7 @@ const int Player_Static_Count = 4;
 char m_chName[4][50];
 
 int m_nWinLate = 1;
-
+int m_nError_GameStop = 1;
 char m_chRepeat[4][50] = { "끝", "처음", "승리자", "패배자" };
 
 // 각 플레이어 별 결과
@@ -31,7 +33,7 @@ int m_nRound = 1;
 void	Play_Game(int nRepeatValue);
 void	Player_NameSet(int nPlayer_Count);
 void	change_Winner_Stauts();
-void	Player_RCP_Scan(int nReapeatValue);
+int		Player_RCP_Scan(int nReapeatValue);
 int		RCP_Scanf(int nRepeatValue, int nPlayer);
 void	get_Winner(int nRepeatValue, int nMatchResult);
 void	get_Loser(int nRepeatValue, int nMatchResult);

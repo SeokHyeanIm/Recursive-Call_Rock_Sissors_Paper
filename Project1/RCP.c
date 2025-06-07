@@ -14,9 +14,17 @@ int main()
 
 void Play_Game(int nRepeatValue)
 {
+	if (m_nError_GameStop == FALSE)
+	{
+		return;
+	}
 	printf("\n\n======================================\n\n");
 	printf("\n%d %s 라운드 시작\n", m_nRound, m_chRepeat[nRepeatValue]);
-	Player_RCP_Scan(nRepeatValue);
+	if (Player_RCP_Scan(nRepeatValue) == FALSE)
+	{
+		m_nError_GameStop = FALSE;
+		return;
+	}
 
 	int nMatchResult = get_MatchResult(nRepeatValue);
 
@@ -26,6 +34,10 @@ void Play_Game(int nRepeatValue)
 		printf("%d 라운드 비김\n", m_nRound++);
 		set_Draw(nRepeatValue);
 		Play_Game(REPEAT);
+		if (m_nError_GameStop == FALSE)
+		{
+			return;
+		}
 	}
 	else if(nMatchResult >= ROCK)
 	{
@@ -44,10 +56,20 @@ void Play_Game(int nRepeatValue)
 		change_Winner_Stauts();
 	}
 
+	if (m_nError_GameStop == FALSE)
+	{
+		return;
+	}
+
 	int nLoser = LOSER_Dupl_Check();
 	if (nLoser > 1)
 	{
 		Play_Game(LOSE_REPEAT);
+	}
+
+	if (m_nError_GameStop == FALSE)
+	{
+		return;
 	}
 }
 void change_Winner_Stauts()
@@ -77,38 +99,54 @@ void change_Winner_Stauts()
 		m_nResult[3] = m_nWinLate++;
 	}
 }
-void Player_RCP_Scan(int nRepeatValue)
+int Player_RCP_Scan(int nRepeatValue)
 {
 	int nPlayerCount = 0;
-	int nRet = 0;
+	int nRet = TRUE;
 
 	int nPlayer = 0;
 
 	if (m_nRepeatPlayer[nPlayerCount] == nRepeatValue)
 	{
 		nRet = RCP_Scanf(nRepeatValue, nPlayerCount);
-		if (nRet < 0) { printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n"); }
+		if (nRet == FALSE) 
+		{ 
+			printf("플레이어 카운트 %d.\n", nPlayerCount); 
+			return nRet;
+		}
 		else nPlayer++;
 	}
 	nPlayerCount++;
 	if (m_nRepeatPlayer[nPlayerCount] == nRepeatValue)
 	{
 		nRet = RCP_Scanf(nRepeatValue, nPlayerCount);
-		if (nRet < 0) { printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n"); }
+		if (nRet == FALSE)
+		{
+			printf("플레이어 카운트 %d.\n", nPlayerCount);
+			return nRet;
+		}
 		else nPlayer++;
 	}
 	nPlayerCount++;
 	if (m_nRepeatPlayer[nPlayerCount] == nRepeatValue)
 	{
 		nRet = RCP_Scanf(nRepeatValue, nPlayerCount);
-		if (nRet < 0) { printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n"); }
+		if (nRet == FALSE)
+		{
+			printf("플레이어 카운트 %d.\n", nPlayerCount);
+			return nRet;
+		}
 		else nPlayer++;
 	}
 	nPlayerCount++;
 	if (m_nRepeatPlayer[nPlayerCount] == nRepeatValue)
 	{
 		nRet = RCP_Scanf(nRepeatValue, nPlayerCount);
-		if (nRet < 0) { printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n"); }
+		if (nRet == FALSE)
+		{
+			printf("플레이어 카운트 %d.\n", nPlayerCount);
+			return nRet;
+		}
 		else nPlayer++;
 	}
 	
@@ -121,23 +159,20 @@ void Player_RCP_Scan(int nRepeatValue)
 	{
 		printf("%d명의 플레이어가 다 냈습니다.\n", nPlayer);
 	}
+	return nRet;
 }
 
 int RCP_Scanf(int nRepeatValue, int nPlayer)
 {
-	int nRCP = 0;
+	int nRCP = FALSE;
+	int nRet = FALSE;
 	int nScan = -1;
 	if (m_nRepeatPlayer[nPlayer] == nRepeatValue)
 	{
 		printf("%d번 참가자 : ", nPlayer + 1);
 		printf("1. 가위		2.바위		3. 보\n답 : ");
 		scanf("%d", &nRCP);
-		if (nRCP < 1 || nRCP > 3)
-		{
-			printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n");
-			nRCP = -1;
-		}
-		else
+		if (nRCP > 0 || nRCP < 4)
 		{
 			switch (nRCP)
 			{
@@ -158,13 +193,13 @@ int RCP_Scanf(int nRepeatValue, int nPlayer)
 			}
 			default:
 				printf("잘못된 숫자 입력으로 인해 프로그램을 종료합니다.\n");
-				nRCP = -1;
-				return nRCP;
+				return nRet;
 			}
 			m_nRCP[nPlayer] = nScan;
+			nRet = TRUE;
 		}
 	}
-	return nRCP;
+	return nRet;
 }
 
 void get_Winner(int nRepeatValue, int nMatchResult)
@@ -306,26 +341,28 @@ int get_MatchResult(int nRepeatValue)
 
 void print_Lank()
 {
-	int nPlayer = 0;
-	if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
-	printf("%d 플레이어 %s의 등수 : %d\n", 
-		nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
-	nPlayer++;
-	
-	if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
-	printf("%d 플레이어 %s의 등수 : %d\n",
-		nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
-	nPlayer++;
+	if (m_nError_GameStop == TRUE)
+	{
+		int nPlayer = 0;
+		if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
+		printf("%d 플레이어 %s의 등수 : %d\n",
+			nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
+		nPlayer++;
 
-	if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
-	printf("%d 플레이어 %s의 등수 : %d\n",
-		nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
-	nPlayer++;
+		if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
+		printf("%d 플레이어 %s의 등수 : %d\n",
+			nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
+		nPlayer++;
 
-	if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
-	printf("%d 플레이어 %s의 등수 : %d\n",
-		nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
-	nPlayer;
+		if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
+		printf("%d 플레이어 %s의 등수 : %d\n",
+			nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
+		nPlayer++;
+
+		if (m_nResult[nPlayer] == 0) { m_nResult[nPlayer] = 4; }
+		printf("%d 플레이어 %s의 등수 : %d\n",
+			nPlayer + 1, m_chName[nPlayer], m_nResult[nPlayer]);
+	}
 }
 
 void Player_NameSet(int nPlayer_Count)
